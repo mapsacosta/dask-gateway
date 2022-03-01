@@ -213,6 +213,7 @@ class DaskGateway(Application):
         site = web.TCPSite(self.runner, host, port, shutdown_timeout=15.0, backlog=128)
         await site.start()
         self.log.info("Dask-Gateway server started")
+        self.log.info("Custom HTCondor build")
         self.log.info("- Private API server listening at http://%s", self.address)
 
     async def cleanup(self):
