@@ -813,21 +813,106 @@ class KubeController(KubeBackendAndControllerMixin, Application):
                 return True
             batch_size *= 2
         return False
+    
+    async def get_htcondor_schedd(self, info, namespace, pod, count):
+        try:
+            os.environ["CONDOR_CONFIG"] = "/etc/condor/condor_config"
+            remotePool = re.findall(r'[\w\/\:\/\-\/\.]+', FERMIHTC_REMOTE_POOL)
+            numCollectors = len(remotePool)
+            # declaring an empty variable for schedd ads
+            scheddAds = None
+            for node in remotePool:
+                self.log.debug("Attempting to query collector: "+ node)
+                collector = htcondor.Collector(node)
+                try:
+                    scheddAds = collector.query(htcondor.AdTypes.Schedd, \
+                                projection=['Name','MyAddress', 'MaxJobsRunning', 'ShadowsRunning', \
+                                          'RecentDaemonCoreDutyCycle', 'TotalIdleJobs'], \
+                                constraint='FERMIHTC_DRAIN_LPCSCHEDD=?=FALSE && FERMIHTC_SCHEDD_TYPE=?="CMSLPC"')
+                except Exception as e:
+                    self.log.debug("Failed to talk to "+node)
+                    self.log.debug(str(e))
+                    numCollectors -= 1
+                    continue
+
+            # Going over the schedd ad and populating the weightedSchedds dictionary with the
+            # relevant values
+            self.log.debug("Going over the schedd list and calculating weight")
+            for schedd in scheddAds:
+                # covert duty cycle in percentage
+                scheddDC = schedd['RecentDaemonCoreDutyCycle'] * 100
+                # calculate schedd occupancy in terms of running jobs
+                scheddRunningJobs = (schedd['ShadowsRunning']/schedd['MaxJobsRunning']) * 100
+                # Calculating weight
+                # 70% of schedd duty cycle
+                # 20% of schedd capacity to run more jobs
+                # 10% of idle jobs on the schedd (for better distribution of jobs across all schedds)
+                weightedSchedds[schedd['Name']] = (0.7 * scheddDC) + \
+                                                  (0.2 * scheddRunningJobs) + \
+                                                  (0.1*schedd['TotalIdleJobs'])
+                self.log.debug("Total weight calculated: "+ str(weightedSchedds[schedd['Name']]))
+
+            # Sorting the schedds per their weight (lower the better)
+             self.log.debug("Sorting schedds per their weight (lower the better)")
+             sortedSchedds = sorted(weightedSchedds.items(), key=lambda item: item[1])
+             return htcondor.Schedd(sortedSchedds[0][0])
+        except Exception as e:
+            self.log.debug("Failed")
+            self.log.debug(str(e))
 
     async def handle_scale_up(self, cluster, sched_pod, info, replicas, delta):
         name = cluster["metadata"]["name"]
         namespace = cluster["metadata"]["namespace"]
         config = FrozenAttrDict(cluster["spec"]["config"])
-
-        pod = self.make_pod(namespace, name, config, is_worker=True)
-        pod["metadata"]["ownerReferences"] = [
+        
+        worker["metadata"]["generateName"] = f"dask-worker-{cluster_name}-"
+        worker_prefix = worker["metadata"]["generateName"] = f"dask-worker-{cluster_name}"
+        
+        env = self.get_env(namespace, cluster_name, config)
+        mem_req = config.worker_memory
+        mem_lim = config.worker_memory_limit
+        cpu_req = config.worker_cores
+        cpu_lim = config.worker_cores_limit
+        cmd = self.get_worker_command(namespace, cluster_name, config)
+        env.append(
             {
-                "apiVersion": "v1",
-                "kind": "Pod",
-                "name": sched_pod["metadata"]["name"],
-                "uid": sched_pod["metadata"]["uid"],
+                "name": "DASK_GATEWAY_WORKER_NAME",
+                "valueFrom": {"fieldRef": {"fieldPath": "metadata.name"}},
             }
-        ]
+        )
+        
+        gateway_worker_job = htcondor.Submit({
+          "executable": "set_gateway_worker.sh",  # the program to run on the execute node
+          "arguments": "-c"+name+"-s tls://dask-gateway-tls.fnal.gov:443", # script needs to know its cluster name and scheduler address
+          "transfer_input_files": "$(input_file)",    # we also need HTCondor to move the file to the execute node
+          "should_transfer_files": "yes",             # force HTCondor to transfer files even though we're running entirely inside a container (and it normally wouldn't need to)
+          "output": worker_prefix+".out",       # anything the job prints to standard output will end up in this file
+          "error": worker_prefix+".err",        # anything the job prints to standard error will end up in this file
+          "log": worker_prefix+".log",          # this file will contain a record of what happened to the job
+          "request_cpus": cpu_req,            # how many CPU cores we want
+          "request_memory": mem_req,      # how much memory we want
+          "request_disk": "128MB",        # how much disk space we want
+        })
+        
+        # Find the best schedd for submission
+        # Reading the configuration first to find the remote pool to query
+        # Exit the script if the read fails
+        schedd = get_htcondor_schedd()
+        submit_result = schedd.submit(gateway_worker_job)  # submit the job
+        print(submit_result.cluster())
+        
+        if submit_result.cluster():
+            failed = False
+        ### Frankenstein code ends here ###
+ #       pod = self.make_pod(namespace, name, config, is_worker=True)
+ #       pod["metadata"]["ownerReferences"] = [
+ #           {
+ #               "apiVersion": "v1",
+ #               "kind": "Pod",
+ #               "name": sched_pod["metadata"]["name"],
+ #               "uid": sched_pod["metadata"]["uid"],
+ #           }
+ #       ]
         to_delete = info.succeeded.union(info.failed)
         info.set_expectations(creates=delta, deletes=len(to_delete))
         self.log.info(
@@ -838,12 +923,14 @@ class KubeController(KubeBackendAndControllerMixin, Application):
             delta,
             len(to_delete),
         )
-        failed = await self.batch_create_pods(info, namespace, pod, delta)
-        res = await asyncio.gather(
-            *(self.delete_pod(namespace, p, info) for p in to_delete),
-            return_exceptions=True,
-        )
-        return failed or any(isinstance(r, Exception) for r in res)
+ #       failed = await self.batch_create_pods(info, namespace, pod, delta)
+ #       res = await asyncio.gather(
+ #           *(self.delete_pod(namespace, p, info) for p in to_delete),
+ #           return_exceptions=True,
+ #       )
+  #      return failed or any(isinstance(r, Exception) for r in res)
+        return failed
+
 
     async def handle_scale_down(self, cluster, sched_pod, info, replicas, delta):
         namespace = cluster["metadata"]["namespace"]
