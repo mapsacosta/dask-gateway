@@ -6,6 +6,7 @@ import signal
 import sys
 import time
 import uuid
+import htcondor
 from base64 import b64encode
 
 from aiohttp import web
@@ -853,9 +854,9 @@ class KubeController(KubeBackendAndControllerMixin, Application):
                 self.log.debug("Total weight calculated: "+ str(weightedSchedds[schedd['Name']]))
 
             # Sorting the schedds per their weight (lower the better)
-             self.log.debug("Sorting schedds per their weight (lower the better)")
-             sortedSchedds = sorted(weightedSchedds.items(), key=lambda item: item[1])
-             return htcondor.Schedd(sortedSchedds[0][0])
+            self.log.debug("Sorting schedds per their weight (lower the better)")
+            sortedSchedds = sorted(weightedSchedds.items(), key=lambda item: item[1])
+            return htcondor.Schedd(sortedSchedds[0][0])
         except Exception as e:
             self.log.debug("Failed")
             self.log.debug(str(e))
@@ -864,9 +865,7 @@ class KubeController(KubeBackendAndControllerMixin, Application):
         name = cluster["metadata"]["name"]
         namespace = cluster["metadata"]["namespace"]
         config = FrozenAttrDict(cluster["spec"]["config"])
-        
-        worker["metadata"]["generateName"] = f"dask-worker-{cluster_name}-"
-        worker_prefix = worker["metadata"]["generateName"] = f"dask-worker-{cluster_name}"
+        worker_prefix = f"dask-worker-{name}"
         
         env = self.get_env(namespace, cluster_name, config)
         mem_req = config.worker_memory
@@ -884,8 +883,8 @@ class KubeController(KubeBackendAndControllerMixin, Application):
         gateway_worker_job = htcondor.Submit({
           "executable": "set_gateway_worker.sh",  # the program to run on the execute node
           "arguments": "-c"+name+"-s tls://dask-gateway-tls.fnal.gov:443", # script needs to know its cluster name and scheduler address
-          "transfer_input_files": "$(input_file)",    # we also need HTCondor to move the file to the execute node
-          "should_transfer_files": "yes",             # force HTCondor to transfer files even though we're running entirely inside a container (and it normally wouldn't need to)
+#          "transfer_input_files": "dask.pem",    # we also need HTCondor to move the file to the execute node
+#          "should_transfer_files": "yes",             # force HTCondor to transfer files even though we're running entirely inside a container (and it normally wouldn't need to)
           "output": worker_prefix+".out",       # anything the job prints to standard output will end up in this file
           "error": worker_prefix+".err",        # anything the job prints to standard error will end up in this file
           "log": worker_prefix+".log",          # this file will contain a record of what happened to the job

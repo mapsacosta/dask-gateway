@@ -97,7 +97,7 @@ class clean(_clean):
         _clean.run(self)
 
 
-install_requires = ["aiohttp", "colorlog", "cryptography", "traitlets"]
+install_requires = ["aiohttp", "colorlog", "cryptography", "traitlets","dask==2.30.0","distributed==2.30.1","htcondor"]
 
 extras_require = {
     "kerberos": ["pykerberos"],

@@ -7,7 +7,7 @@ with open(os.path.join(here, "dask_gateway", "_version.py")) as f:
     exec(f.read(), {}, ns)
     VERSION = ns["__version__"]
 
-install_requires = ["aiohttp", "dask>=2.2.0", "distributed>=2.2.0"]
+install_requires = ["aiohttp", "dask>=2022.2.0", "distributed==2022.2.0"]
 
 extras_require = {
     "kerberos": [
