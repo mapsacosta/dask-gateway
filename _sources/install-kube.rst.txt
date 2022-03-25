@@ -24,6 +24,24 @@ When running on Kubernetes, Dask Gateway is composed of the following components
 Both the Traefik Proxy deployment and the Gateway API Server deployment can be
 scaled to multiple replicas, for increased availability and scalability.
 
+The Dask Gateway pods running on Kubernetes include the following:
+- ``traefik``: The **Traefik Proxy**
+- ``api``: The **Gateway API Server**
+- ``scheduler`` & ``worker``: User's Dask Scheduler and Worker
+- ``controller``: The Kubernetes **Gateway Controller** for managing Dask-Gateway resources
+
+Network communications happen in the following manner:
+- The ``traefik`` pods proxy connections to the ``api`` pods on port 8000, and ``scheduler`` pods on ports 8786 and 8787.
+- The ``api`` pods send api requests to the ``scheduler`` pods over port 8788.
+- If using JupyterHub Auth., the ``api`` pod sends requests to the JupyterHub server to authenticate.
+- Depending on the configuration, requests go directly to the JupyterHub pods through service lookup or through the JupyterHub Proxy.
+- The ``worker`` pods communicate with the ``scheduler`` on port 8786.
+- The ``traefik`` pods proxy ``worker`` communications on port 8787 for the dashboard.
+- The ``worker`` pods listen for incoming communications on a random high port, which the ``scheduler`` opens connections back to.
+- ``worker`` pods also communicate with each other on these random high ports.
+- The ``scheduler`` pods send heartbeat requests to the ``api`` server pods using the ``api`` service DNS name on port 8000.
+- The ``controller`` pod only communicates to the Kubernetes API and receives no inbound traffic.
+
 Create a Kubernetes Cluster (optional)
 --------------------------------------
 
@@ -55,7 +73,7 @@ To avoid downloading the chart locally from GitHub, you can use the
 
 .. code-block:: shell
 
-    $ helm repo add daskgateway https://dask.org/dask-gateway-helm-repo/
+    $ helm repo add dask https://helm.dask.org/
     $ helm repo update
 
 
@@ -86,7 +104,7 @@ To install the Dask-Gateway Helm chart, run the following command:
         --version $VERSION \
         --values path/to/your/config.yaml \
         $RELEASE \
-        daskgateway/dask-gateway
+        dask/dask-gateway
 
 where:
 
@@ -242,8 +260,8 @@ anti-affinity for scheduler pods to avoid `preemptible nodes`_:
 
 For information on allowed fields, see the Kubernetes documentation:
 
-- `PodSpec Configuration <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#podspec-v1-core>`__
-- `Container Configuration <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#container-v1-core>`__
+- `PodSpec Configuration <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#podspec-v1-core>`__
+- `Container Configuration <https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#container-v1-core>`__
 
 
 Using ``extraConfig``
@@ -380,20 +398,20 @@ here for reference:
 .. _zero-to-jupyterhub-k8s: https://zero-to-jupyterhub.readthedocs.io/en/latest/
 .. _guide provided by zero-to-jupyterhub-k8s: https://zero-to-jupyterhub.readthedocs.io/en/stable/kubernetes/setup-helm.html
 .. _Helm chart repository:
-.. _dask-gateway helm chart repository: https://dask.org/dask-gateway-helm-repo/
+.. _dask-gateway helm chart repository: https://helm.dask.org/
 .. _dask-gateway github repo: https://github.com/dask/dask-gateway/
 .. _resources/helm subdirectory: https://github.com/dask/dask-gateway/tree/main/resources/helm
 .. _default values.yaml file: https://github.com/dask/dask-gateway/blob/main/resources/helm/dask-gateway/values.yaml
-.. _Helm release name: https://docs.helm.sh/glossary/#release
+.. _Helm release name: https://helm.sh/docs/glossary/#release
 .. _Kubernetes namespace: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
 .. _Dask Dashboards: https://docs.dask.org/en/latest/diagnostics-distributed.html
 .. _yaml: https://en.wikipedia.org/wiki/YAML
 .. _JupyterHub: https://jupyterhub.readthedocs.io/
 .. _notebook: https://jupyter.org/
 .. _JupyterHub Service: https://jupyterhub.readthedocs.io/en/stable/getting-started/services-basics.html
-.. _Kubernetes API: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/
-.. _tolerations: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-.. _node affinities: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+.. _Kubernetes API: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/
+.. _tolerations: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+.. _node affinities: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
 .. _preemptible nodes: https://cloud.google.com/blog/products/containers-kubernetes/cutting-costs-with-google-kubernetes-engine-using-the-cluster-autoscaler-and-preemptible-vms
 .. _init process: https://en.wikipedia.org/wiki/Init
 .. _tini: https://github.com/krallin/tini
