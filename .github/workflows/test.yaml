@@ -30,23 +30,57 @@ env:
 jobs:
   main-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # We test against different versions of Python and Golang, but not
+          # against different versions of Node.
+          #
+          # - The Python version installed where dask-gateway and
+          #   dask-gateway-proxy is run by the end user matters, so we test
+          #   against all the versions we intend to support.
+          #
+          #   We could for example choose to test against the versions that
+          #   hasn't reached end of life yet: https://endoflife.date/python.
+          #
+          # - The Golang version that compiles
+          #   dask-gateway-server/dask-gateway-proxy bundled for the
+          #   dask-gateway-server Python package is the only thing that matters.
+          #   Due to that, we can test fewer versions of Golang.
+          #
+          #   We could for example choose to test against the versions that
+          #   hasn't reached end of life yet: https://endoflife.date/go.
+          #
+          # - Node is a dependency for JupyterHub's configurable-http-proxy that
+          #   we test integration with. We can test against only one version and
+          #   that would be fine.
+          #
+          - python-version: "3.7"
+            go-version: "1.15"
+          - python-version: "3.8"
+            go-version: "1.16"
+          - python-version: "3.9"
+            go-version: "1.17"
+          - python-version: "3.10"
+            go-version: "1.18"
+
     steps:
       - uses: actions/checkout@v3
 
       - uses: actions/setup-python@v3
         with:
-          python-version: "3.8"
+          python-version: "${{ matrix.python-version }}"
 
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.14"
+          go-version: "${{ matrix.go-version }}"
 
       - uses: actions/setup-node@v3
 
-      - name: Install requirements
+      - name: Install Python test requirements
         run: |
-          go get github.com/stretchr/testify/assert
-          source continuous_integration/install.sh
+          continuous_integration/install.sh
 
       - name: List Python packages
         run: |
@@ -56,11 +90,15 @@ jobs:
         run: |
           py.test tests/ -k 'not kubernetes' -v
 
+      - name: Install Go test requirements
+        run: |
+          cd dask-gateway-server/dask-gateway-proxy
+          go get github.com/stretchr/testify/assert
+
       - name: Run Go tests
         run: |
-          pushd dask-gateway-server/dask-gateway-proxy
+          cd dask-gateway-server/dask-gateway-proxy
           go test
-          popd
 
   hadoop-tests:
     runs-on: ubuntu-latest
@@ -75,28 +113,35 @@ jobs:
 
   kubernetes-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # We run this job multiple times with different parameterization
+        # specified below, these parameters have no meaning on their own and
+        # gain meaning on how job steps use them.
+        #
+        # k3s-version: https://github.com/rancher/k3s/tags
+        # k3s-channel: https://update.k3s.io/v1-release/channels
+        #
+        include:
+          - k3s-channel: v1.20
+          - k3s-channel: v1.21
+          - k3s-channel: v1.22
+          - k3s-channel: v1.23
     steps:
       - uses: actions/checkout@v3
 
-      - uses: AbsaOSS/k3d-action@v2
-        name: "Create k3d Cluster"
+      # Starts a k8s cluster with NetworkPolicy enforcement and installs both
+      # kubectl and helm
+      #
+      # ref: https://github.com/jupyterhub/action-k3s-helm/
+      #
+      - uses: jupyterhub/action-k3s-helm@v1
         with:
-          cluster-name: "k3s-default"
-          args: >-
-            --port "30200:30200@agent:0:direct"
-            --agents 1
-            --api-port 6444
-            --no-lb
-
-      - name: Install tools
-        run: |
-          export KUBECONFIG="$(k3d get-kubeconfig --name='k3s-default')"
-          ./continuous_integration/kubernetes/install-tools.sh
-
-      - name: Check k3d
-        run: |
-          k3d --version
-          kubectl get nodes
+          k3s-channel: ${{ matrix.k3s-channel }}
+          metrics-enabled: false
+          traefik-enabled: false
+          docker-enabled: true
 
       - name: Helm lint and render templates
         run: |
@@ -104,8 +149,6 @@ jobs:
 
       - name: Helm Install
         run: |
-          stern "" > k8s-logs &
-          echo "STERN_PID=$!" >> $GITHUB_ENV
           ./continuous_integration/kubernetes/helm-install.sh
           ./continuous_integration/kubernetes/install.sh
 
@@ -113,11 +156,15 @@ jobs:
         run: |
           ./continuous_integration/kubernetes/script.sh
 
-      - name: Kubernetes log
-        if: ${{ always() }}
-        run: |
-          kill ${{ env.STERN_PID }}
-          cat k8s-logs
+      # ref: https://github.com/jupyterhub/action-k8s-namespace-report
+      - name: Kubernetes namespace report
+        uses: jupyterhub/action-k8s-namespace-report@v1
+        if: always()
+        with:
+          important-workloads: >-
+            deploy/api-test-dask-gateway
+            deploy/controller-test-dask-gateway
+            deploy/traefik-test-dask-gateway
 
   pbs-tests:
     runs-on: ubuntu-latest

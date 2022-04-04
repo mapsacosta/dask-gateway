@@ -58,7 +58,7 @@ class build_proxy(Command):
             sys.exit(code)
 
 
-class mixin(object):
+class mixin:
     def initialize_options(self):
         self.no_build_proxy = False
         super().initialize_options()
@@ -98,6 +98,8 @@ class clean(_clean):
 
 
 install_requires = ["aiohttp", "colorlog", "cryptography", "traitlets","dask==2.30.0","distributed==2.30.1","htcondor"]
+# NOTE: changes to the dependencies here must also be reflected
+# in ../dev-environment.yaml
 
 extras_require = {
     "kerberos": ["pykerberos"],
@@ -136,8 +138,10 @@ setup(
         "Topic :: System :: Distributed Computing",
         "Topic :: System :: Systems Administration",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     keywords="dask hadoop kubernetes HPC distributed cluster",
     description=(
@@ -157,7 +161,7 @@ setup(
     package_data=package_data,
     install_requires=install_requires,
     extras_require=extras_require,
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     entry_points={
         "console_scripts": [
             "dask-gateway-server = dask_gateway_server.app:main",

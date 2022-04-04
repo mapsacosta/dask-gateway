@@ -7,7 +7,9 @@ with open(os.path.join(here, "dask_gateway", "_version.py")) as f:
     exec(f.read(), {}, ns)
     VERSION = ns["__version__"]
 
-install_requires = ["aiohttp", "dask>=2022.2.0", "distributed==2022.2.0"]
+install_requires = ["aiohttp", "dask==2022.2.0", "distributed==2022.2.0"]
+# NOTE: changes to the dependencies here must also be reflected
+# in ../dev-environment.yaml
 
 extras_require = {
     "kerberos": [
@@ -30,8 +32,10 @@ setup(
         "Topic :: Scientific/Engineering",
         "Topic :: System :: Distributed Computing",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     keywords="dask hadoop kubernetes HPC distributed cluster",
     description="A client library for interacting with a dask-gateway server",
@@ -48,5 +52,6 @@ setup(
     package_data={"dask_gateway": ["*.yaml"]},
     install_requires=install_requires,
     extras_require=extras_require,
+    python_requires=">=3.7",
     zip_safe=False,
 )

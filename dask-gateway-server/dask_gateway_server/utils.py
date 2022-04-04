@@ -10,15 +10,13 @@ from keyword import iskeyword
 import aiohttp.abc
 from colorlog import ColoredFormatter
 
-from .compat import get_running_loop, all_tasks
-
 
 def timestamp():
     """An integer timestamp represented as milliseconds since the epoch UTC"""
     return int(time.time() * 1000)
 
 
-class TaskPool(object):
+class TaskPool:
     def __init__(self):
         self.tasks = weakref.WeakSet()
         self.closed = False
@@ -37,7 +35,7 @@ class TaskPool(object):
         self.tasks.clear()
 
 
-class CancelGroup(object):
+class CancelGroup:
     def __init__(self):
         self.tasks = set()
         self.cancelled = False
@@ -63,7 +61,7 @@ class CancelGroup(object):
         self.tasks.discard(it)
 
 
-class _cancel_context(object):
+class _cancel_context:
     def __init__(self, context):
         self.context = context
         self._task = None
@@ -83,7 +81,7 @@ class _cancel_context(object):
         self._task = None
 
 
-class RateLimiter(object):
+class RateLimiter:
     """A token-bucket based rate limiter.
 
     The bucket starts out with ``burst`` tokens, and is replenished at ``rate``
@@ -245,7 +243,7 @@ class FrozenAttrDict(Mapping):
         return list(out)
 
 
-class LRUCache(object):
+class LRUCache:
     """A LRU cache"""
 
     def __init__(self, max_size):
@@ -274,11 +272,11 @@ class LRUCache(object):
             pass
 
 
-class Flag(object):
+class Flag:
     """A simpler version of asyncio.Event"""
 
     def __init__(self):
-        self._future = get_running_loop().create_future()
+        self._future = asyncio.get_running_loop().create_future()
 
     def set(self):
         if not self._future.done():
@@ -319,7 +317,7 @@ def run_main(main):
 
 
 def _cancel_all_tasks(loop):
-    to_cancel = all_tasks(loop)
+    to_cancel = asyncio.all_tasks(loop)
     if not to_cancel:
         return
 
