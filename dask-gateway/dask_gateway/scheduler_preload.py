@@ -90,7 +90,9 @@ class CommHandler(BaseHandler):
         op = msg.pop("op", None)
         if op == "scale":
             count = msg.get("count", 0)
-            await self.gateway_service.scale(count)
+            #await self.gateway_service.scale(count)
+            print("I AM HERE Line 94: await self.gateway_service.scale(count)")
+
         elif op == "adapt":
             minimum = msg.get("minimum")
             maximum = msg.get("maximum")
@@ -308,8 +310,10 @@ class GatewaySchedulerService(object):
         await self._scale(count)
 
     async def _scale(self, count):
+        logger.debug("HELLO, I am interrupting the scale request")
         if count != self.count:
             logger.info("Requesting scale to %s workers from %s", count, self.count)
+            logger.debug("Requesting scale to %s workers from %s", count, self.count)
             self.count = count
             await self.waiter.interrupt()
 

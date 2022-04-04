@@ -872,7 +872,7 @@ class KubeController(KubeBackendAndControllerMixin, Application):
         name = cluster["metadata"]["name"]
         namespace = cluster["metadata"]["namespace"]
         config = FrozenAttrDict(cluster["spec"]["config"])
-        worker_prefix = "dask-worker-%s" % name
+#        worker_prefix = "dask-worker-%s" % name
         print("Creating htcondor worker" + worker_prefix )
         
         env = self.get_env(namespace, name, config)
@@ -882,39 +882,37 @@ class KubeController(KubeBackendAndControllerMixin, Application):
         cpu_lim = config.worker_cores_limit
         cmd = self.get_worker_command(namespace, name, config)
         print(cmd)
-        env.append(
-            {
-                "name": "DASK_GATEWAY_WORKER_NAME",
-                "valueFrom": {"fieldRef": {"fieldPath": "metadata.name"}},
-            }
-        )
-        print("Printing env dict? " + str(env))
-        gateway_worker_job = htcondor.Submit({
-          "executable": "set_gateway_worker.sh",  # the program to run on the execute node
-          "arguments": "-c"+name+"-s tls://dask-gateway-tls.fnal.gov:443", # script needs to know its cluster name and scheduler address
+#        env.append(
+#            {
+#                "name": "DASK_GATEWAY_WORKER_NAME",
+#                "valueFrom": {"fieldRef": {"fieldPath": "metadata.name"}},
+#            }
+#        )
+#        print("Printing env dict? " + str(env))
+#        gateway_worker_job = htcondor.Submit({
+#          "executable": "set_gateway_worker.sh",  # the program to run on the execute node
+#          "arguments": "-c"+name+"-s tls://dask-gateway-tls.fnal.gov:443", # script needs to know its cluster name and scheduler address
 #          "transfer_input_files": "dask.pem",    # we also need HTCondor to move the file to the execute node
 #          "should_transfer_files": "yes",             # force HTCondor to transfer files even though we're running entirely inside a container (and it normally wouldn't need to)
-          "output": worker_prefix+".out",       # anything the job prints to standard output will end up in this file
-          "error": worker_prefix+".err",        # anything the job prints to standard error will end up in this file
-          "log": worker_prefix+".log",          # this file will contain a record of what happened to the job
-          "request_cpus": cpu_req,            # how many CPU cores we want
-          "request_memory": mem_req,      # how much memory we want
-          "request_disk": "128MB",        # how much disk space we want
-        })
-
-        print("HTCondr submit object")
-        print(gateway_worker_job)
+#          "output": worker_prefix+".out",       # anything the job prints to standard output will end up in this file
+#          "error": worker_prefix+".err",        # anything the job prints to standard error will end up in this file
+#          "log": worker_prefix+".log",          # this file will contain a record of what happened to the job
+#          "request_cpus": cpu_req,            # how many CPU cores we want
+#          "request_memory": mem_req,      # how much memory we want
+#          "request_disk": "128MB",        # how much disk space we want
+#        })
+#        print("HTCondr submit object")
+#        print(gateway_worker_job)
         
         # Find the best schedd for submission
         # Reading the configuration first to find the remote pool to query
         # Exit the script if the read fails
-        schedd = self.get_htcondor_schedd(info)
-        print(type(schedd))
-        submit_result = schedd.submit(gateway_worker_job)  # submit the job
-        print(submit_result.cluster())
-        
-        if submit_result.cluster():
-            failed = False
+#        schedd = self.get_htcondor_schedd(info)
+#        print(type(schedd))
+#        submit_result = schedd.submit(gateway_worker_job)  # submit the job
+#        print(submit_result.cluster())
+#        if submit_result.cluster():
+#            failed = False
         ### Frankenstein code ends here ###
  #       pod = self.make_pod(namespace, name, config, is_worker=True)
  #       pod["metadata"]["ownerReferences"] = [
@@ -941,7 +939,7 @@ class KubeController(KubeBackendAndControllerMixin, Application):
  #           return_exceptions=True,
  #       )
   #      return failed or any(isinstance(r, Exception) for r in res)
-        return failed
+        return True
 
 
     async def handle_scale_down(self, cluster, sched_pod, info, replicas, delta):
