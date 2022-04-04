@@ -649,7 +649,7 @@ empty list as you have no clusters running yet.</p>
 <h2>Shutting everything down<a class="headerlink" href="#shutting-everything-down" title="Permalink to this headline">¶</a></h2>
 <p>When you’re done with the gateway, you’ll want to delete your deployment and
 clean everything up. You can do this with <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">delete</span></code>:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ helm delete --purge <span class="nv">$RELEASE</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ helm delete <span class="nv">$RELEASE</span>
 </pre></div>
 </div>
 </div>
@@ -886,9 +886,9 @@ here for reference:</p>
 <span class="w">      </span><span class="nt">config</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w"></span>
 
 <span class="w">  </span><span class="nt">livenessProbe</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># Enables the livenessProbe. </span><span class="w"></span>
+<span class="w">    </span><span class="c1"># Enables the livenessProbe.</span><span class="w"></span>
 <span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># Configures the livenessProbe. </span><span class="w"></span>
+<span class="w">    </span><span class="c1"># Configures the livenessProbe.</span><span class="w"></span>
 <span class="w">    </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w"></span>
 <span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
 <span class="w">    </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
