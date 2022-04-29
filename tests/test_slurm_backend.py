@@ -15,7 +15,6 @@ from dask_gateway_server.backends.jobqueue.slurm import (
 
 from .utils_test import temp_gateway, wait_for_workers, with_retries
 
-
 pytestmark = pytest.mark.usefixtures("cleanup_jobs")
 
 
@@ -68,8 +67,8 @@ class SlurmTestingBackend(SlurmBackend):
 async def test_slurm_backend():
     c = Config()
 
-    c.SlurmClusterConfig.scheduler_cmd = "/opt/miniconda/bin/dask-scheduler"
-    c.SlurmClusterConfig.worker_cmd = "/opt/miniconda/bin/dask-worker"
+    c.SlurmClusterConfig.scheduler_cmd = "/opt/python/bin/dask-scheduler"
+    c.SlurmClusterConfig.worker_cmd = "/opt/python/bin/dask-worker"
     c.SlurmClusterConfig.scheduler_memory = "256M"
     c.SlurmClusterConfig.worker_memory = "256M"
     c.SlurmClusterConfig.scheduler_cores = 1

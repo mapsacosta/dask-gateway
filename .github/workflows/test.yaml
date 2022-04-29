@@ -18,9 +18,7 @@ on:
       - "**.rst"
       - ".github/workflows/*"
       - "!.github/workflows/test.yaml"
-    branches-ignore:
-      - "dependabot/**"
-      - "pre-commit-ci-update-config"
+    branches: ["main"]
     tags: ["**"]
   workflow_dispatch:
 
@@ -30,6 +28,7 @@ env:
 jobs:
   main-tests:
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
@@ -56,8 +55,6 @@ jobs:
           #   we test integration with. We can test against only one version and
           #   that would be fine.
           #
-          - python-version: "3.7"
-            go-version: "1.15"
           - python-version: "3.8"
             go-version: "1.16"
           - python-version: "3.9"
@@ -67,28 +64,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v3
         with:
           python-version: "${{ matrix.python-version }}"
-
       - uses: actions/setup-go@v3
         with:
           go-version: "${{ matrix.go-version }}"
-
       - uses: actions/setup-node@v3
+
+      # jupyterhub will when being mock started as part of running tests depend
+      # on the Node npm package configurable-http-proxy.
+      #
+      - name: Install jupyterhub with system dependencies
+        run: |
+          npm install -g configurable-http-proxy
+          pip install jupyterhub
 
       - name: Install Python test requirements
         run: |
-          continuous_integration/install.sh
-
-      - name: List Python packages
-        run: |
-          pip freeze
+          pip install -r tests/requirements.txt
+          pip list
 
       - name: Run Python tests
         run: |
-          py.test tests/ -k 'not kubernetes' -v
+          pytest -v tests/ -k 'not kubernetes'
 
       - name: Install Go test requirements
         run: |
@@ -100,19 +99,10 @@ jobs:
           cd dask-gateway-server/dask-gateway-proxy
           go test
 
-  hadoop-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Hadoop Install/Start
-        if: ${{ env.commit_msg != 'skip-tests' }}
-        run: |
-          ./continuous_integration/docker/hadoop/start.sh
-          ./continuous_integration/docker/hadoop/install.sh
-          ./continuous_integration/docker/hadoop/script.sh
-
   kubernetes-tests:
+    name: "Test k8s backend and Helm chart"
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
@@ -125,36 +115,95 @@ jobs:
         #
         include:
           - k3s-channel: v1.20
+            upgrade-from: "0.9.0"
           - k3s-channel: v1.21
           - k3s-channel: v1.22
           - k3s-channel: v1.23
+
     steps:
       - uses: actions/checkout@v3
+        with:
+          # chartpress requires git history to set chart version and image tags
+          # correctly
+          fetch-depth: 0
+      - uses: actions/setup-python@v3
 
       # Starts a k8s cluster with NetworkPolicy enforcement and installs both
       # kubectl and helm
       #
       # ref: https://github.com/jupyterhub/action-k3s-helm/
       #
-      - uses: jupyterhub/action-k3s-helm@v1
+      - uses: jupyterhub/action-k3s-helm@v2
         with:
           k3s-channel: ${{ matrix.k3s-channel }}
           metrics-enabled: false
           traefik-enabled: false
           docker-enabled: true
 
-      - name: Helm lint and render templates
+      - name: Install Python test requirements
         run: |
-          ./continuous_integration/kubernetes/helm-lint-and-template.sh
+          DASK_GATEWAY_SERVER__NO_PROXY=true pip install -r tests/requirements.txt
+          pip list
 
-      - name: Helm Install
-        run: |
-          ./continuous_integration/kubernetes/helm-install.sh
-          ./continuous_integration/kubernetes/install.sh
+      - name: Generate values.schema.json from YAML equivalent
+        run: resources/helm/tools/generate-json-schema.py
 
-      - name: Kubernetes Tests
+      - name: helm lint
         run: |
-          ./continuous_integration/kubernetes/script.sh
+          helm lint resources/helm/dask-gateway \
+              --values=resources/helm/testing/chart-install-values.yaml
+
+      - name: helm template
+        run: |
+          helm template test-dask-gateway resources/helm/dask-gateway \
+              --include-crds \
+              --values=resources/helm/testing/chart-install-values.yaml
+
+      - name: helm install previous version ${{ matrix.upgrade-from }}
+        if: matrix.upgrade-from != ''
+        run: |
+          # relocate to a directory where there isn't a folder named
+          # dask-gateway to avoid making helm think we mean a local folder
+          cd resources/helm/testing
+
+          helm install \
+              test-dask-gateway \
+              dask-gateway \
+              --repo=https://helm.dask.org \
+              --version=${{ matrix.upgrade-from }} \
+              --values=chart-install-values.yaml \
+              --wait \
+              --timeout 1m0s
+
+      - working-directory: resources/helm
+        run: chartpress
+
+      # If the Helm chart's CRDs have changed, helm won't upgrade them when
+      # running helm upgrade.
+      #
+      # See https://github.com/dask/dask-gateway/issues/553.
+      #
+      - name: Manual upgrade of CRDs
+        if: matrix.upgrade-from != ''
+        run: |
+          kubectl apply -f resources/helm/dask-gateway/crds/daskclusters.yaml
+          kubectl apply -f resources/helm/dask-gateway/crds/traefik.yaml
+
+      - name: helm install (or upgrade)
+        run: |
+          helm upgrade \
+              test-dask-gateway \
+              resources/helm/dask-gateway \
+              --install \
+              --values=resources/helm/testing/chart-install-values.yaml \
+              --wait \
+              --timeout 1m0s
+
+      - name: pytest
+        run: |
+          TEST_DASK_GATEWAY_KUBE=true \
+          TEST_DASK_GATEWAY_KUBE_ADDRESS=http://localhost:30200/services/dask-gateway/ \
+          pytest -v tests/kubernetes
 
       # ref: https://github.com/jupyterhub/action-k8s-namespace-report
       - name: Kubernetes namespace report
@@ -166,24 +215,42 @@ jobs:
             deploy/controller-test-dask-gateway
             deploy/traefik-test-dask-gateway
 
-  pbs-tests:
+  # These tests starts a container with a specific backend (that can start
+  # schedulers/workers somehow), and installing test dependencies and running
+  # tests from within the container.
+  #
+  containerized-backend-tests:
+    name: "Test ${{ matrix.backend }} backend"
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: PBS Tests
-        if: ${{ env.commit_msg != 'skip-tests' }}
-        run: |
-          ./continuous_integration/docker/pbs/start.sh
-          ./continuous_integration/docker/pbs/install.sh
-          ./continuous_integration/docker/pbs/script.sh
 
-  slurm-tests:
-    runs-on: ubuntu-latest
+    # packages read access is required for pull to the backend containers
+    permissions:
+      contents: read
+      packages: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        backend:
+          - hadoop
+          - pbs
+          - slurm
+
     steps:
       - uses: actions/checkout@v3
-      - name: Slurm Tests
-        if: ${{ env.commit_msg != 'skip-tests' }}
-        run: |
-          ./continuous_integration/docker/slurm/start.sh
-          ./continuous_integration/docker/slurm/install.sh
-          ./continuous_integration/docker/slurm/script.sh
+
+      - name: Login to ghcr.io read access to CI image
+        run: echo "${{ secrets.github_token }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: Start container and mount local git repo
+        run: ./continuous_integration/docker/${{ matrix.backend }}/start.sh
+
+      - name: Install test requirements (inside container)
+        run: ./continuous_integration/docker/${{ matrix.backend }}/install.sh
+
+      - name: Run tests (inside container)
+        run: ./continuous_integration/docker/${{ matrix.backend }}/test.sh
+
+      - name: Print logs for debugging
+        if: always()
+        run: ./continuous_integration/docker/${{ matrix.backend }}/print_logs.sh

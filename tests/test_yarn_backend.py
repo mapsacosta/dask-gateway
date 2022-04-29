@@ -1,6 +1,6 @@
 import os
-import pytest
 
+import pytest
 from traitlets.config import Config
 
 skein = pytest.importorskip("skein")
@@ -12,7 +12,6 @@ from dask_gateway.auth import BasicAuth
 from dask_gateway_server.backends.yarn import YarnBackend
 
 from .utils_test import temp_gateway, wait_for_workers, with_retries
-
 
 pytestmark = pytest.mark.usefixtures("cleanup_applications")
 
@@ -51,10 +50,10 @@ class YarnTestingBackend(YarnBackend):
 async def test_yarn_backend():
 
     c = Config()
-    c.YarnClusterConfig.scheduler_cmd = "/opt/miniconda/bin/dask-scheduler"
-    c.YarnClusterConfig.worker_cmd = "/opt/miniconda/bin/dask-worker"
-    c.YarnClusterConfig.scheduler_memory = "512M"
-    c.YarnClusterConfig.worker_memory = "512M"
+    c.YarnClusterConfig.scheduler_cmd = "/opt/python/bin/dask-scheduler"
+    c.YarnClusterConfig.worker_cmd = "/opt/python/bin/dask-worker"
+    c.YarnClusterConfig.scheduler_memory = "128M"
+    c.YarnClusterConfig.worker_memory = "128M"
     c.YarnClusterConfig.scheduler_cores = 1
     c.YarnClusterConfig.worker_cores = 1
 

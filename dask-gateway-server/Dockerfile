@@ -1,65 +1,42 @@
-FROM python:3.9-slim-bullseye as dependencies
-LABEL MAINTAINER="Jim Crist-Harif"
+# This Dockerfile and image, ghcr.io/dask/dask-gateway-server, is used by the
+# dask-gateway Helm chart, by the api pod and the controller pod.
+#
+# The pods are started with different commands:
+#
+# - api pod command:        dask-gateway-server ...
+# - controller pod command: dask-gateway-server kube-controller ...
+#
+FROM python:3.10-slim-bullseye
 
+# Set labels based on the Open Containers Initiative (OCI):
+# https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
+#
+LABEL org.opencontainers.image.source="https://github.com/dask/dask-gateway"
+LABEL org.opencontainers.image.url="https://github.com/dask/dask-gateway/blob/HEAD/dask-gateway-server/Dockerfile"
+
+# Install tini and upgrade linux packages are updated to patch known
+# vulnerabilities.
 RUN apt-get update \
-    && apt-get install -y tini git \
-    && rm -rf /var/lib/apt/lists/*
+ && apt-get upgrade -y \
+ && apt-get install -y \
+        tini \
+ && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir \
-    aiohttp==3.8.1 \
-    colorlog \
-    cryptography \
-    traitlets==5.1.1 \
-    pyyaml \
-    htcondor \
-    kubernetes-asyncio==18.20.0
+# Create a non-root user to run as
+RUN useradd --create-home --user-group --uid 1000 dask
+USER dask:dask
+ENV PATH=/home/dask/.local/bin:$PATH
+WORKDIR /home/dask/
 
+# Install dask-gateway-server
+#
+# The Golang proxy binary isn't built as the dask-gateway Helm chart relies on
+# Traefik as a proxy instead to run in its dedicated pod.
+#
+COPY --chown=dask:dask . /srv/dask-gateway-server
 
-
-# Build dask-gateway-server from source in a builder stage
-FROM dependencies AS builder
-
-RUN mkdir -p /tmp/workdir
-RUN mkdir -p /tmp/install-prefix
-COPY . /tmp/workdir/
-WORKDIR /tmp/workdir/
-RUN python setup.py install \
-    --no-build-proxy \
-    --single-version-externally-managed \
-    --record=record.txt \
-    --prefix /tmp/install-prefix
-
-
-
-# Final image - merge dependencies and built dask-gateway
-FROM dependencies
-
-COPY --from=builder /tmp/install-prefix/bin/dask-gateway-server /usr/local/bin/
-COPY --from=builder /tmp/install-prefix/lib /usr/local/lib/
-
-# Create non-root user and working directory
-WORKDIR /srv/dask-gateway
-RUN useradd -m -U -u 1000 dask && chown dask:dask /srv/dask-gateway
-
-# Latest versions can be found at:
-# - dask:           https://anaconda.org/conda-forge/dask
-# - distributed:    https://anaconda.org/conda-forge/distributed
-#ARG DASK_VERSION=2.30.0
-#ARG DISTRIBUTED_VERSION=2.30.1
-
-# Need to downgrade dask and distributed
-#RUN /opt/conda/bin/conda install -c conda-forge -y \
-#        aiohttp=3.8.1 \
-#        dask==$DASK_VERSION \
-#        distributed==$DISTRIBUTED_VERSION \
-#        numpy==1.21.4 \
-#        pandas==1.3.4 \
-#    && /opt/conda/bin/conda clean -afy \
-#    && find /opt/conda/ -follow -type f -name '*.a' -delete \
-#    && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
-#    && find /opt/conda/lib/python*/site-packages/bokeh/server/static -follow -type f -name '*.js' ! -name '*.min.js' -delete
-
-USER 1000:1000
+RUN DASK_GATEWAY_SERVER__NO_PROXY=true pip install --no-cache-dir \
+        "/srv/dask-gateway-server[kubernetes]"
 
 ENTRYPOINT ["tini", "-g", "--"]
 CMD ["dask-gateway-server", "--config", "/etc/dask-gateway/dask_gateway_config.py"]
