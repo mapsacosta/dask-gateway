@@ -5,13 +5,12 @@ import signal
 import time
 
 from aiohttp import web
-from traitlets.config import Config
-
+from dask_gateway import Gateway
 from dask_gateway_server.app import DaskGateway
 from dask_gateway_server.backends.inprocess import InProcessBackend
 from dask_gateway_server.backends.local import UnsafeLocalBackend
 from dask_gateway_server.utils import random_port
-from dask_gateway import Gateway
+from traitlets.config import Config
 
 
 class aiohttp_server:
@@ -61,6 +60,11 @@ class temp_gateway:
         self.gateway.initialize([])
         await self.gateway.setup()
         await self.gateway.backend.proxy._proxy_contacted
+        # Awaiting _proxy_contacted isn't failsafe and can lead to "ValueError,
+        # 404 NOT FOUND" if not complemented with a sufficiently long sleep
+        # following it. See https://github.com/dask/dask-gateway/pull/529 for a
+        # discussion on this.
+        await asyncio.sleep(0.25)
         self.address = f"http://{self.gateway.backend.proxy.address}"
         self.proxy_address = f"gateway://{self.gateway.backend.proxy.tcp_address}"
         return self

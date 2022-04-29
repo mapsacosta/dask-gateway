@@ -9,12 +9,11 @@ import signal
 import sys
 import tempfile
 
-from traitlets import List, Unicode, Integer
+from traitlets import Integer, List, Unicode
 
+from ..traitlets import Type
 from .base import ClusterConfig
 from .db_base import DBBackendBase
-from ..traitlets import Type
-
 
 __all__ = ("LocalClusterConfig", "LocalBackend", "UnsafeLocalBackend")
 
@@ -54,7 +53,7 @@ async def wait_is_shutdown(pid, timeout=10):
     return False
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def getpwnam(username):
     return pwd.getpwnam(username)
 

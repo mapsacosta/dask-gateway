@@ -2,15 +2,14 @@ import asyncio
 import ssl
 
 import pytest
-from aiohttp import web, ClientSession
-from distributed import Client
-from distributed.security import Security
-from distributed.deploy.local import LocalCluster
-
+from aiohttp import ClientSession, web
 from dask_gateway.client import GatewaySecurity
 from dask_gateway_server.proxy import Proxy
 from dask_gateway_server.tls import new_keypair
 from dask_gateway_server.utils import random_port
+from distributed import Client
+from distributed.deploy.local import LocalCluster
+from distributed.security import Security
 
 from .utils_test import aiohttp_server, with_retries
 
@@ -35,6 +34,11 @@ class temp_proxy:
         self.site = web.TCPSite(self.runner, "127.0.0.1", self._port)
         await self.site.start()
         await self.proxy._proxy_contacted
+        # Awaiting _proxy_contacted isn't failsafe and can lead to "ValueError,
+        # 404 NOT FOUND" if not complemented with a sufficiently long sleep
+        # following it. See https://github.com/dask/dask-gateway/pull/529 for a
+        # discussion on this.
+        await asyncio.sleep(0.25)
         return self.proxy
 
     async def __aexit__(self, *args):

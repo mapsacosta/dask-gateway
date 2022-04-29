@@ -1,31 +1,13 @@
 #!/usr/bin/env bash
-source ~/.bashrc
-
 set -xe
 
 cd /working
 
-conda install psutil pykerberos
-conda install -c conda-forge python=3.8
+# pykerberos needs to compile c++ code that depends on system libraries, by
+# installing it from conda-forge, we avoid such hassle.
+mamba install pykerberos
 
-pip install \
-    aiohttp \
-    colorlog \
-    dask \
-    distributed \
-    cryptography \
-    traitlets \
-    sqlalchemy \
-    skein \
-    pytest \
-    pytest-asyncio
-
-pushd dask-gateway
-python setup.py develop
-popd
-
-pushd dask-gateway-server
-python setup.py develop
-popd
+# This installs everything else we need for tests
+pip install -r tests/requirements.txt
 
 pip list
