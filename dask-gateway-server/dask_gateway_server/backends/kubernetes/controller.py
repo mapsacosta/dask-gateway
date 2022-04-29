@@ -1090,31 +1090,7 @@ class KubeController(KubeBackendAndControllerMixin, Application):
 
         return route["metadata"]["name"]
 
-    async def create_ingressroutetcpsched_if_not_exists(self, cluster, sched_pod):
-        name = cluster["metadata"]["name"]
-        namespace = cluster["metadata"]["namespace"]
-        route = self.make_ingressroutetcpsched(name, namespace)
-        route["metadata"]["ownerReferences"] = [
-            {
-                "apiVersion": "v1",
-                "kind": "Pod",
-                "name": sched_pod["metadata"]["name"],
-                "uid": sched_pod["metadata"]["uid"],
-            }
-        ]
-
-        self.log.info("Creating scheduler TCP route for cluster %s.%s", namespace, name)
-        try:
-            await self.custom_client.create_namespaced_custom_object(
-                "traefik.containo.us", "v1alpha1", namespace, "ingressroutetcps", route
-            )
-        except ApiException as exc:
-            if exc.status != 409:
-                raise
-
-        return route["metadata"]["name"]
-
-    def get_scheduler_command(self, namespace, cluster_name, config):
+   def get_scheduler_command(self, namespace, cluster_name, config):
         return config.scheduler_cmd + [
             "--protocol",
             "tls",
@@ -1149,9 +1125,7 @@ class KubeController(KubeBackendAndControllerMixin, Application):
             "--memory-limit",
             str(config.worker_memory_limit),
         ]
-        self.log.warning(string)
-        print(string)
-
+        self.log.info("Worker command: "+ string)
 
         return config.worker_cmd + [
             f"tls://{service_name}.{namespace}:8786",
@@ -1193,67 +1167,9 @@ class KubeController(KubeBackendAndControllerMixin, Application):
             labels["app.kubernetes.io/component"] = component
         return labels
 
-    # Emulates the make_pod method
-    # Creates and prepares a sandbox for HTCondor workers connecting 
-    # to this cluster
-    # IMPORTANT: Does NOT submit jobs automatically 
-    def make_htcondor_job(self, namespace, cluster_name, config, is_worker=False):
-        env = self.get_env(namespace, cluster_name, config)
-
-        if is_worker:
-            mem_req = config.worker_memory
-            mem_lim = config.worker_memory_limit
-            cpu_req = config.worker_cores
-            cpu_lim = config.worker_cores_limit
-            cmd = self.get_worker_command(namespace, cluster_name, config)
- 
-            worker_name = "htcdask-worker-"+cluster_name
-
-            gateway_worker_job = htcondor.Submit({
-                "executable": "set_gateway_worker.sh",
-                "arguments": "-c "+cluster_name+" -n "+worker_name+" -s tls://dask-gateway-tls.fnal.gov:443",
-                "transfer_input_files": "dask.pem",
-                "should_transfer_files": "yes",   
-                "output": worker_name+".out", 
-                "error": worker_name+".err",  
-                "log": worker_name+".log",
-                "request_cpus": cpu_req,
-                "request_memory": mem_req,
-                "request_disk": "128MB",
-            })
-            print("HTCondr submit object")
-            print(gateway_worker_job)
- 
-        else:
-            mem_req = config.scheduler_memory
-            mem_lim = config.scheduler_memory_limit
-            cpu_req = config.scheduler_cores
-            cpu_lim = config.scheduler_cores_limit
-            cmd = self.get_scheduler_command(namespace, cluster_name, config)
- 
-            scheduler_name = "htcdask-scheduler-"+cluster_name
-
-            gateway_scheduler_job = htcondor.Submit({
-                "executable": "set_gateway_scheduler.sh",
-                "arguments": "-c "+cluster_name+" -n "+scheduler_name+" -a https://dask-gateway-api.fnal.gov",
-                "transfer_input_files": "dask.pem",
-                "should_transfer_files": "yes",   
-                "output": scheduler_name+".out", 
-                "error": scheduler_name+".err",  
-                "log": scheduler_name+".log",
-                "request_cpus": cpu_req,
-                "request_memory": mem_req,
-                "request_disk": "128MB",
-            })
-            print("HTCondr submit object")
-            print(gateway_scheduler_job)
-
-        return gateway_worker_job
-
     def make_pod(self, namespace, cluster_name, config, is_worker=False):
         env = self.get_env(namespace, cluster_name, config)
         wkr_cmd = self.get_worker_command(namespace, cluster_name, config)
-        print(wkr_cmd)
 
         if is_worker:
             container_name = "dask-worker"
@@ -1407,7 +1323,6 @@ class KubeController(KubeBackendAndControllerMixin, Application):
 
     def make_ingressroute(self, cluster_name, namespace):
         route = f"{self.proxy_prefix}/clusters/{namespace}.{cluster_name}/"
-        sched_route = f"{self.proxy_prefix}/schedulers/{namespace}.{cluster_name}/"
         return {
             "apiVersion": "traefik.containo.us/v1alpha1",
             "kind": "IngressRoute",
@@ -1427,18 +1342,6 @@ class KubeController(KubeBackendAndControllerMixin, Application):
                                 "name": self.make_service_name(cluster_name),
                                 "namespace": namespace,
                                 "port": 8787,
-                            }
-                        ],
-                        "middlewares": self.proxy_web_middlewares,
-                    },
-                    {
-                        "kind": "Rule",
-                        "match": f"PathPrefix(`{sched_route}`)",
-                        "services": [
-                            {
-                                "name": self.make_service_name(cluster_name),
-                                "namespace": namespace,
-                                "port": 8786,
                             }
                         ],
                         "middlewares": self.proxy_web_middlewares,
