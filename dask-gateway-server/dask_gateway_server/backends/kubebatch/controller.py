@@ -6,39 +6,37 @@ import signal
 import sys
 import time
 import uuid
-import htcondor
-import pprint
-import re
 from base64 import b64encode
 
 from aiohttp import web
-from kubernetes_asyncio import client, config
-from kubernetes_asyncio.client.rest import ApiException
-from traitlets import Float, Integer, List, Unicode, validate
+from traitlets import Unicode, Integer, Float, List, validate
 from traitlets.config import catch_config_error
 
+from kubernetes_asyncio import client, config
+from kubernetes_asyncio.client.rest import ApiException
+
 from ... import __version__ as VERSION
-from ...tls import new_keypair
-from ...traitlets import Application
 from ...utils import (
     AccessLogger,
-    FrozenAttrDict,
     LogFormatter,
-    RateLimiter,
-    TaskPool,
     normalize_address,
     run_main,
+    FrozenAttrDict,
+    RateLimiter,
+    TaskPool,
     timestamp,
 )
-from ...workqueue import Backoff, WorkQueue, WorkQueueClosed
-from .backend import KubeBackendAndControllerMixin
+from ...traitlets import Application
+from ...tls import new_keypair
+from ...workqueue import WorkQueue, Backoff, WorkQueueClosed
 from .utils import (
     Informer,
-    RateLimitedClient,
-    k8s_timestamp,
     merge_json_objects,
+    k8s_timestamp,
     parse_k8s_timestamp,
+    RateLimitedClient,
 )
+from .backend import KubeBackendAndControllerMixin
 
 
 def get_container_status(pod, name):
@@ -73,7 +71,7 @@ def get_cluster_key(obj):
         return None
 
 
-class ClusterInfo:
+class ClusterInfo(object):
     """Stores in-memory state about a given cluster.
 
     State can be reconstructed from k8s, this just provides fast access in the
@@ -815,103 +813,37 @@ class KubeController(KubeBackendAndControllerMixin, Application):
                 return True
             batch_size *= 2
         return False
-    
-    def get_htcondor_schedd(self, info):
-        try:
-            #os.environ["CONDOR_CONFIG"] = "/etc/condor/condor_config"
-            # TODO: MAke this configurable AKA addd into KubeClusterConfig: 
-            #https://github.com/mapsacosta/dask-gateway/blob/ebfe9d2fe53e8a7c9f9242a650a6be864ed1e1aa/dask-gateway-server/dask_gateway_server/backends/kubernetes/backend.py#L26
-            #remotePool = re.findall(r'[\w\/\:\/\-\/\.]+', config.collector_hosts)
-            collector_hosts = 'cmst1mgr1.fnal.gov,cmssrv605.fnal.gov'
-            remotePool = collector_hosts.split(",")
-            numCollectors = len(remotePool)
-            print("Got following COLLECTOR HOSTS: "+ str(remotePool))
-            # declaring an empty variable for schedd ads
-            scheddAds = None
-            for node in remotePool:
-                self.log.info("Attempting to query collector: "+ node)
-                collector = htcondor.Collector(node)
-                try:
-                    scheddAds = collector.query(htcondor.AdTypes.Schedd, \
-                                projection=['Name','MyAddress', 'MaxJobsRunning', 'ShadowsRunning', \
-                                          'RecentDaemonCoreDutyCycle', 'TotalIdleJobs'], \
-                                constraint='FERMIHTC_DRAIN_LPCSCHEDD=?=FALSE && FERMIHTC_SCHEDD_TYPE=?="CMSLPC"')
-                except Exception as e:
-                    self.log.info("Failed to talk to "+node)
-                    self.log.info(str(e))
-                    numCollectors -= 1
-                    continue
-
-            # Going over the schedd ad and populating the weightedSchedds dictionary with the
-            # relevant values
-            self.log.info("Going over the schedd list and calculating weight")
-            for schedd in scheddAds:
-                # covert duty cycle in percentage
-                scheddDC = schedd['RecentDaemonCoreDutyCycle'] * 100
-                # calculate schedd occupancy in terms of running jobs
-                scheddRunningJobs = (schedd['ShadowsRunning']/schedd['MaxJobsRunning']) * 100
-                # Calculating weight
-                # 70% of schedd duty cycle
-                # 20% of schedd capacity to run more jobs
-                # 10% of idle jobs on the schedd (for better distribution of jobs across all schedds)
-                weightedSchedds[schedd['Name']] = (0.7 * scheddDC) + \
-                                                  (0.2 * scheddRunningJobs) + \
-                                                  (0.1*schedd['TotalIdleJobs'])
-                self.log.info("Total weight calculated: "+ str(weightedSchedds[schedd['Name']]))
-
-            # Sorting the schedds per their weight (lower the better)
-            self.log.info("Sorting schedds per their weight (lower the better)")
-            sortedSchedds = sorted(weightedSchedds.items(), key=lambda item: item[1])
-            return htcondor.Schedd(sortedSchedds[0][0])
-
-        except Exception as e:
-            self.log.info("Failed")
-            self.log.info(str(e))
 
     async def handle_scale_up(self, cluster, sched_pod, info, replicas, delta):
         name = cluster["metadata"]["name"]
         namespace = cluster["metadata"]["namespace"]
         config = FrozenAttrDict(cluster["spec"]["config"])
+
+        pod = self.make_pod(namespace, name, config, is_worker=True)
+        pod["metadata"]["ownerReferences"] = [
+            {
+                "apiVersion": "v1",
+                "kind": "Pod",
+                "name": sched_pod["metadata"]["name"],
+                "uid": sched_pod["metadata"]["uid"],
+            }
+        ]
         to_delete = info.succeeded.union(info.failed)
         info.set_expectations(creates=delta, deletes=len(to_delete))
-        kubeBatchWorkers = False
         self.log.info(
-            "Cluster %s.%s scaling to %d - creating %d Kube workers, %d HTCondor workers, deleting %d stopped workers",
+            "Cluster %s.%s scaled to %d - creating %d workers, deleting %d stopped workers",
             namespace,
             name,
-            0,
             replicas,
             delta,
             len(to_delete),
         )
-        if kubeBatchWorkers:
-            failed = await self.batch_create_pods(info, namespace, pod, delta)
-            res = await asyncio.gather(
-                *(self.delete_pod(namespace, p, info) for p in to_delete),
-                return_exceptions=True,
-            )
-            self.log.info(
-                "Cluster %s.%s scaled to %d - created %d Kube workers, deleted %d stopped workers",
-                namespace,
-                name,
-                replicas,
-                delta,
-                len(to_delete),
-            )
- 
-            return failed or any(isinstance(r, Exception) for r in res)
-        else:
-            self.log.info(
-                "Cluster %s.%s scaled to %d - creating %d HTCondor workers, deleting %d stopped workers",
-                namespace,
-                name,
-                replicas,
-                delta,
-                len(to_delete),
-            )
-            return True
-        return True
-
+        failed = await self.batch_create_pods(info, namespace, pod, delta)
+        res = await asyncio.gather(
+            *(self.delete_pod(namespace, p, info) for p in to_delete),
+            return_exceptions=True,
+        )
+        return failed or any(isinstance(r, Exception) for r in res)
 
     async def handle_scale_down(self, cluster, sched_pod, info, replicas, delta):
         namespace = cluster["metadata"]["namespace"]
@@ -1089,30 +1021,6 @@ class KubeController(KubeBackendAndControllerMixin, Application):
 
         return route["metadata"]["name"]
 
-    async def create_ingressroutetcpsched_if_not_exists(self, cluster, sched_pod):
-        name = cluster["metadata"]["name"]
-        namespace = cluster["metadata"]["namespace"]
-        route = self.make_ingressroutetcpsched(name, namespace)
-        route["metadata"]["ownerReferences"] = [
-            {
-                "apiVersion": "v1",
-                "kind": "Pod",
-                "name": sched_pod["metadata"]["name"],
-                "uid": sched_pod["metadata"]["uid"],
-            }
-        ]
-
-        self.log.info("Creating scheduler TCP route for cluster %s.%s", namespace, name)
-        try:
-            await self.custom_client.create_namespaced_custom_object(
-                "traefik.containo.us", "v1alpha1", namespace, "ingressroutetcps", route
-            )
-        except ApiException as exc:
-            if exc.status != 409:
-                raise
-
-        return route["metadata"]["name"]
-
     def get_scheduler_command(self, namespace, cluster_name, config):
         return config.scheduler_cmd + [
             "--protocol",
@@ -1137,21 +1045,6 @@ class KubeController(KubeBackendAndControllerMixin, Application):
 
     def get_worker_command(self, namespace, cluster_name, config):
         service_name = self.make_service_name(cluster_name)
-        string = config.worker_cmd + [
-            f"tls://{service_name}.{namespace}:8786",
-            "--dashboard-address",
-            ":8787",
-            "--name",
-            "$(DASK_GATEWAY_WORKER_NAME)",
-            "--nthreads",
-            str(config.worker_threads),
-            "--memory-limit",
-            str(config.worker_memory_limit),
-        ]
-        self.log.warning(string)
-        print(string)
-
-
         return config.worker_cmd + [
             f"tls://{service_name}.{namespace}:8786",
             "--dashboard-address",
@@ -1192,67 +1085,8 @@ class KubeController(KubeBackendAndControllerMixin, Application):
             labels["app.kubernetes.io/component"] = component
         return labels
 
-    # Emulates the make_pod method
-    # Creates and prepares a sandbox for HTCondor workers connecting 
-    # to this cluster
-    # IMPORTANT: Does NOT submit jobs automatically 
-    def make_htcondor_job(self, namespace, cluster_name, config, is_worker=False):
-        env = self.get_env(namespace, cluster_name, config)
-
-        if is_worker:
-            mem_req = config.worker_memory
-            mem_lim = config.worker_memory_limit
-            cpu_req = config.worker_cores
-            cpu_lim = config.worker_cores_limit
-            cmd = self.get_worker_command(namespace, cluster_name, config)
- 
-            worker_name = "htcdask-worker-"+cluster_name
-
-            gateway_worker_job = htcondor.Submit({
-                "executable": "set_gateway_worker.sh",
-                "arguments": "-c "+cluster_name+" -n "+worker_name+" -s tls://dask-gateway-tls.fnal.gov:443",
-                "transfer_input_files": "dask.pem",
-                "should_transfer_files": "yes",   
-                "output": worker_name+".out", 
-                "error": worker_name+".err",  
-                "log": worker_name+".log",
-                "request_cpus": cpu_req,
-                "request_memory": mem_req,
-                "request_disk": "128MB",
-            })
-            print("HTCondr submit object")
-            print(gateway_worker_job)
- 
-        else:
-            mem_req = config.scheduler_memory
-            mem_lim = config.scheduler_memory_limit
-            cpu_req = config.scheduler_cores
-            cpu_lim = config.scheduler_cores_limit
-            cmd = self.get_scheduler_command(namespace, cluster_name, config)
- 
-            scheduler_name = "htcdask-scheduler-"+cluster_name
-
-            gateway_scheduler_job = htcondor.Submit({
-                "executable": "set_gateway_scheduler.sh",
-                "arguments": "-c "+cluster_name+" -n "+scheduler_name+" -a https://dask-gateway-api.fnal.gov",
-                "transfer_input_files": "dask.pem",
-                "should_transfer_files": "yes",   
-                "output": scheduler_name+".out", 
-                "error": scheduler_name+".err",  
-                "log": scheduler_name+".log",
-                "request_cpus": cpu_req,
-                "request_memory": mem_req,
-                "request_disk": "128MB",
-            })
-            print("HTCondr submit object")
-            print(gateway_scheduler_job)
-
-        return gateway_worker_job
-
     def make_pod(self, namespace, cluster_name, config, is_worker=False):
         env = self.get_env(namespace, cluster_name, config)
-        wkr_cmd = self.get_worker_command(namespace, cluster_name, config)
-        print(wkr_cmd)
 
         if is_worker:
             container_name = "dask-worker"
@@ -1406,7 +1240,6 @@ class KubeController(KubeBackendAndControllerMixin, Application):
 
     def make_ingressroute(self, cluster_name, namespace):
         route = f"{self.proxy_prefix}/clusters/{namespace}.{cluster_name}/"
-        sched_route = f"{self.proxy_prefix}/schedulers/{namespace}.{cluster_name}/"
         return {
             "apiVersion": "traefik.containo.us/v1alpha1",
             "kind": "IngressRoute",
@@ -1429,25 +1262,13 @@ class KubeController(KubeBackendAndControllerMixin, Application):
                             }
                         ],
                         "middlewares": self.proxy_web_middlewares,
-                    },
-                    {
-                        "kind": "Rule",
-                        "match": f"PathPrefix(`{sched_route}`)",
-                        "services": [
-                            {
-                                "name": self.make_service_name(cluster_name),
-                                "namespace": namespace,
-                                "port": 8786,
-                            }
-                        ],
-                        "middlewares": self.proxy_web_middlewares,
                     }
- 
                 ],
             },
         }
 
     def make_ingressroutetcp(self, cluster_name, namespace):
+        route = f"{self.proxy_prefix}/schedulers/{namespace}.{cluster_name}/"
         return {
             "apiVersion": "traefik.containo.us/v1alpha1",
             "kind": "IngressRouteTCP",
@@ -1468,11 +1289,25 @@ class KubeController(KubeBackendAndControllerMixin, Application):
                                 "port": 8786,
                             }
                         ],
+                    },
+                    {
+                        "kind": "Rule",
+                        "match": f"PathPrefix(`{route}`)",
+                        "services": [
+                            {
+                                "name": self.make_service_name(cluster_name),
+                                "namespace": namespace,
+                                "port": 8786,
+                            }
+                        ],
+                        "middlewares": self.proxy_web_middlewares,
                     }
+ 
                 ],
                 "tls": {"passthrough": True},
             },
         }
+
 
 main = KubeController.launch_instance
 

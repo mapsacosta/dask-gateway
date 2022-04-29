@@ -9,6 +9,8 @@ with open(os.path.join(here, "dask_gateway", "_version.py")) as f:
     exec(f.read(), {}, ns)
     VERSION = ns["__version__"]
 
+# NOTE: changes to the dependencies here must also be reflected
+# in ../dev-environment.yaml
 with open("requirements.txt") as f:
     install_requires = [l for l in f.readlines() if not l.startswith("#")]
 
