@@ -1090,7 +1090,7 @@ class KubeController(KubeBackendAndControllerMixin, Application):
 
         return route["metadata"]["name"]
 
-   def get_scheduler_command(self, namespace, cluster_name, config):
+    def get_scheduler_command(self, namespace, cluster_name, config):
         return config.scheduler_cmd + [
             "--protocol",
             "tls",
