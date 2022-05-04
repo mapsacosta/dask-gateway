@@ -1125,7 +1125,7 @@ class KubeController(KubeBackendAndControllerMixin, Application):
             "--memory-limit",
             str(config.worker_memory_limit),
         ]
-        self.log.info("Worker command: "+ string)
+        self.log.info("Worker command: "+ str(string))
 
         return config.worker_cmd + [
             f"tls://{service_name}.{namespace}:8786",
@@ -1307,7 +1307,8 @@ class KubeController(KubeBackendAndControllerMixin, Application):
                 "name": self.make_service_name(cluster_name),
             },
             "spec": {
-                "clusterIP": "None",
+#                "clusterIP": "None",
+                "type": "ClusterIP",
                 "selector": {
                     "gateway.dask.org/cluster": cluster_name,
                     "gateway.dask.org/instance": self.gateway_instance,
@@ -1345,7 +1346,7 @@ class KubeController(KubeBackendAndControllerMixin, Application):
                             }
                         ],
                         "middlewares": self.proxy_web_middlewares,
-                    }
+                    },
  
                 ],
             },
