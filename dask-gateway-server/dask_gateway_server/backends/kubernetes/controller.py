@@ -317,6 +317,19 @@ class KubeController(KubeBackendAndControllerMixin, Application):
         # Load configuration
         self.load_config_file(self.config_file)
 
+        # Preset externalIPs (!!! This is temporary !!!)
+        self.external_ips = [
+                             {'dns_name':'gatewayscheduler-1.fnal.gov','ip': "131.225.219.43","parent_cluster":None,"alloc":False},
+                             {'dns_name':'gatewayscheduler-2.fnal.gov','ip': "131.225.219.44","parent_cluster":None,"alloc":False},
+                             {'dns_name':'gatewayscheduler-3.fnal.gov','ip': "131.225.219.45","parent_cluster":None,"alloc":False},
+                             {'dns_name':'gatewayscheduler-4.fnal.gov','ip': "131.225.219.46","parent_cluster":None,"alloc":False},
+                             {'dns_name':'gatewayscheduler-5.fnal.gov','ip': "131.225.219.47","parent_cluster":None,"alloc":False},
+                            ]
+
+        # We assume none of these are allocated at startup
+        # But we want to keep count and separate lists to avoid clashing
+        self.allocated = []
+
         # Initialize aiohttp application
         self.app = web.Application(logger=self.log)
         self.app["controller"] = self
@@ -1296,6 +1309,18 @@ class KubeController(KubeBackendAndControllerMixin, Application):
             },
         }
 
+    def assign_external_ip(self, cluster_name):
+        import random
+
+        index = random.randint(0,len(self.external_ips)-1)
+        address = self.external_ips.pop(index)
+#        {'dns_name':'gatewayscheduler-5.fnal.gov','ip': "131.225.219.47","parent_cluster":None,"alloc":False},
+        address['parent_cluster'] = cluster_name
+        address['alloc'] = True
+        self.allocated.append(address)
+        return address['ip']
+ 
+
     def make_service_name(self, cluster_name):
         return f"dask-{cluster_name}"
 
@@ -1308,7 +1333,8 @@ class KubeController(KubeBackendAndControllerMixin, Application):
             },
             "spec": {
 #                "clusterIP": "None",
-                "type": "ClusterIP",
+                "externalIPs": [self.assign_external_ip(cluster_name)],
+                "type": "LoadBalancer",
                 "selector": {
                     "gateway.dask.org/cluster": cluster_name,
                     "gateway.dask.org/instance": self.gateway_instance,
