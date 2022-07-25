@@ -1,11 +1,11 @@
-
+ 
 <!DOCTYPE html>
 
 <html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Configuration Reference &#8212; Dask Gateway 2022.4.0 documentation</title>
+    <title>Configuration Reference &#8212; Dask Gateway 2022.6.1 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -32,6 +32,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx-book-theme.9d8b4a8b9bb19db25eeaddc40d639ba2.js"></script>
+    <link rel="shortcut icon" href="_static/images/favicon.svg"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Development" href="develop.html" />
@@ -103,7 +104,7 @@
       
       
       
-      <h1 class="site-logo" id="site-title">Dask Gateway 2022.4.0 documentation</h1>
+      <h1 class="site-logo" id="site-title">Dask Gateway 2022.6.1 documentation</h1>
       
     </a>
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
@@ -665,7 +666,7 @@
 <h2>Gateway Server<a class="headerlink" href="#gateway-server" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.app.DaskGateway">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.app.</span></span><span class="sig-name descname"><span class="pre">DaskGateway</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.app.DaskGateway" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.app.</span></span><span class="sig-name descname"><span class="pre">DaskGateway</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.app.DaskGateway" title="Permalink to this definition">¶</a></dt>
 <dd><p>A gateway for managing dask clusters across multiple users</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.app.DaskGateway.address">
@@ -738,7 +739,7 @@
 <span id="kerberos-auth-config"></span><h3>KerberosAuthenticator<a class="headerlink" href="#kerberosauthenticator" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.auth.KerberosAuthenticator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.auth.</span></span><span class="sig-name descname"><span class="pre">KerberosAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.auth.KerberosAuthenticator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.auth.</span></span><span class="sig-name descname"><span class="pre">KerberosAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.auth.KerberosAuthenticator" title="Permalink to this definition">¶</a></dt>
 <dd><p>An authenticator using kerberos</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.auth.KerberosAuthenticator.cache_max_age">
@@ -776,7 +777,7 @@ transparent to the user).</p>
 <span id="jupyterhub-auth-config"></span><h3>JupyterHubAuthenticator<a class="headerlink" href="#jupyterhubauthenticator" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.auth.JupyterHubAuthenticator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.auth.</span></span><span class="sig-name descname"><span class="pre">JupyterHubAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.auth.JupyterHubAuthenticator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.auth.</span></span><span class="sig-name descname"><span class="pre">JupyterHubAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.auth.JupyterHubAuthenticator" title="Permalink to this definition">¶</a></dt>
 <dd><p>An authenticator that uses JupyterHub to perform authentication</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.auth.JupyterHubAuthenticator.cache_max_age">
@@ -839,7 +840,7 @@ environment variable.</p>
 <span id="simple-auth-config"></span><h3>SimpleAuthenticator<a class="headerlink" href="#simpleauthenticator" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.auth.SimpleAuthenticator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.auth.</span></span><span class="sig-name descname"><span class="pre">SimpleAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.auth.SimpleAuthenticator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.auth.</span></span><span class="sig-name descname"><span class="pre">SimpleAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.auth.SimpleAuthenticator" title="Permalink to this definition">¶</a></dt>
 <dd><p>A simple authenticator that uses Basic Auth.</p>
 <p>This is highly insecure, use only for testing!!!</p>
 <dl class="py attribute">
@@ -877,7 +878,7 @@ transparent to the user).</p>
 <span id="cluster-config"></span><h4>ClusterConfig<a class="headerlink" href="#clusterconfig" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.base.ClusterConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.base.</span></span><span class="sig-name descname"><span class="pre">ClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.base.ClusterConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.base.</span></span><span class="sig-name descname"><span class="pre">ClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.base.ClusterConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for holding individual Dask cluster configurations</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.base.ClusterConfig.adaptive_period">
@@ -995,7 +996,7 @@ suffixes:</p>
 <h4>Backend<a class="headerlink" href="#backend" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.base.Backend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.base.</span></span><span class="sig-name descname"><span class="pre">Backend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.base.Backend" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.base.</span></span><span class="sig-name descname"><span class="pre">Backend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.base.Backend" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for defining dask-gateway backends.</p>
 <p>Subclasses should implement the following methods:</p>
 <ul class="simple">
@@ -1037,7 +1038,7 @@ cluster. See the documentation for more information:</p>
 <h4>LocalClusterConfig<a class="headerlink" href="#localclusterconfig" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.local.LocalClusterConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.local.</span></span><span class="sig-name descname"><span class="pre">LocalClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.local.LocalClusterConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.local.</span></span><span class="sig-name descname"><span class="pre">LocalClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.local.LocalClusterConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dask cluster configuration options when running as local processes</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.local.LocalClusterConfig.adaptive_period">
@@ -1155,7 +1156,7 @@ suffixes:</p>
 <h4>LocalBackend<a class="headerlink" href="#localbackend" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.local.LocalBackend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.local.</span></span><span class="sig-name descname"><span class="pre">LocalBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.local.LocalBackend" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.local.</span></span><span class="sig-name descname"><span class="pre">LocalBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.local.LocalBackend" title="Permalink to this definition">¶</a></dt>
 <dd><p>A cluster backend that launches local processes.</p>
 <p>Requires super-user permissions in order to run processes for the
 requesting username.</p>
@@ -1371,7 +1372,7 @@ of failures.</p>
 <h4>UnsafeLocalBackend<a class="headerlink" href="#unsafelocalbackend" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.local.UnsafeLocalBackend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.local.</span></span><span class="sig-name descname"><span class="pre">UnsafeLocalBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.local.UnsafeLocalBackend" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.local.</span></span><span class="sig-name descname"><span class="pre">UnsafeLocalBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.local.UnsafeLocalBackend" title="Permalink to this definition">¶</a></dt>
 <dd><p>A version of LocalBackend that doesn’t set permissions.</p>
 <p>FOR TESTING ONLY! This provides no user separations - clusters run with the
 same level of permission as the gateway.</p>
@@ -1590,7 +1591,7 @@ of failures.</p>
 <span id="yarn-config"></span><h4>YarnClusterConfig<a class="headerlink" href="#yarnclusterconfig" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.yarn.YarnClusterConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.yarn.</span></span><span class="sig-name descname"><span class="pre">YarnClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.yarn.YarnClusterConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.yarn.</span></span><span class="sig-name descname"><span class="pre">YarnClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.yarn.YarnClusterConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dask cluster configuration options when running on Hadoop/YARN</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.yarn.YarnClusterConfig.adaptive_period">
@@ -1752,7 +1753,7 @@ suffixes:</p>
 <h4>YarnBackend<a class="headerlink" href="#yarnbackend" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.yarn.YarnBackend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.yarn.</span></span><span class="sig-name descname"><span class="pre">YarnBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.yarn.YarnBackend" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.yarn.</span></span><span class="sig-name descname"><span class="pre">YarnBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.yarn.YarnBackend" title="Permalink to this definition">¶</a></dt>
 <dd><p>A cluster backend for managing dask clusters on Hadoop/YARN.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.yarn.YarnBackend.api_url">
@@ -1950,7 +1951,7 @@ of failures.</p>
 <span id="kube-cluster-config"></span><h4>KubeClusterConfig<a class="headerlink" href="#kubeclusterconfig" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.kubernetes.KubeClusterConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.kubernetes.</span></span><span class="sig-name descname"><span class="pre">KubeClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.kubernetes.KubeClusterConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.kubernetes.</span></span><span class="sig-name descname"><span class="pre">KubeClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.kubernetes.KubeClusterConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configuration for a single Dask cluster running on kubernetes</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.kubernetes.KubeClusterConfig.adaptive_period">
@@ -2240,7 +2241,7 @@ following suffixes:</p>
 <h4>KubeBackend<a class="headerlink" href="#kubebackend" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.kubernetes.KubeBackend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.kubernetes.</span></span><span class="sig-name descname"><span class="pre">KubeBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.kubernetes.KubeBackend" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.kubernetes.</span></span><span class="sig-name descname"><span class="pre">KubeBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.kubernetes.KubeBackend" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dask-gateway backend for running on Kubernetes</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.kubernetes.KubeBackend.api_url">
@@ -2302,7 +2303,7 @@ cluster. See the documentation for more information:</p>
 <h4>KubeController<a class="headerlink" href="#kubecontroller" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.kubernetes.controller.KubeController">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.kubernetes.controller.</span></span><span class="sig-name descname"><span class="pre">KubeController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.kubernetes.controller.KubeController" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.kubernetes.controller.</span></span><span class="sig-name descname"><span class="pre">KubeController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.kubernetes.controller.KubeController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Kubernetes controller for dask-gateway</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.kubernetes.controller.KubeController.address">
@@ -2471,7 +2472,7 @@ order of magnitude).</p>
 <h4>PBSClusterConfig<a class="headerlink" href="#pbsclusterconfig" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.jobqueue.pbs.PBSClusterConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.jobqueue.pbs.</span></span><span class="sig-name descname"><span class="pre">PBSClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.jobqueue.pbs.PBSClusterConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.jobqueue.pbs.</span></span><span class="sig-name descname"><span class="pre">PBSClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.jobqueue.pbs.PBSClusterConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dask cluster configuration options when running on PBS</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.jobqueue.pbs.PBSClusterConfig.account">
@@ -2664,7 +2665,7 @@ suffixes:</p>
 <h4>PBSBackend<a class="headerlink" href="#pbsbackend" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.jobqueue.pbs.PBSBackend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.jobqueue.pbs.</span></span><span class="sig-name descname"><span class="pre">PBSBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.jobqueue.pbs.PBSBackend" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.jobqueue.pbs.</span></span><span class="sig-name descname"><span class="pre">PBSBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.jobqueue.pbs.PBSBackend" title="Permalink to this definition">¶</a></dt>
 <dd><p>A backend for deploying Dask on a PBS cluster.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.jobqueue.pbs.PBSBackend.api_url">
@@ -2870,7 +2871,7 @@ of failures.</p>
 <h4>SlurmClusterConfig<a class="headerlink" href="#slurmclusterconfig" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.jobqueue.slurm.SlurmClusterConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.jobqueue.slurm.</span></span><span class="sig-name descname"><span class="pre">SlurmClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.jobqueue.slurm.SlurmClusterConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.jobqueue.slurm.</span></span><span class="sig-name descname"><span class="pre">SlurmClusterConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.jobqueue.slurm.SlurmClusterConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dask cluster configuration options when running on SLURM</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.jobqueue.slurm.SlurmClusterConfig.account">
@@ -3032,7 +3033,7 @@ suffixes:</p>
 <h4>SlurmBackend<a class="headerlink" href="#slurmbackend" title="Permalink to this headline">¶</a></h4>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.jobqueue.slurm.SlurmBackend">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.jobqueue.slurm.</span></span><span class="sig-name descname"><span class="pre">SlurmBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.jobqueue.slurm.SlurmBackend" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.backends.jobqueue.slurm.</span></span><span class="sig-name descname"><span class="pre">SlurmBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.backends.jobqueue.slurm.SlurmBackend" title="Permalink to this definition">¶</a></dt>
 <dd><p>A backend for deploying Dask on a Slurm cluster.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.backends.jobqueue.slurm.SlurmBackend.api_url">
@@ -3235,7 +3236,7 @@ of failures.</p>
 <h3>Proxy<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="dask_gateway_server.proxy.Proxy">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.proxy.</span></span><span class="sig-name descname"><span class="pre">Proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.proxy.Proxy" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dask_gateway_server.proxy.</span></span><span class="sig-name descname"><span class="pre">Proxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dask_gateway_server.proxy.Proxy" title="Permalink to this definition">¶</a></dt>
 <dd><p>The dask-gateway-server proxy</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dask_gateway_server.proxy.Proxy.address">
