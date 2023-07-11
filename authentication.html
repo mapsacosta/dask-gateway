@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Authentication &#8212; Dask Gateway 2022.6.1 documentation</title>
+    <title>Authentication &#8212; Dask Gateway 2023.1.1 documentation</title>
     
   <link href="_static/css/theme.css" rel="stylesheet">
   <link href="_static/css/index.ff1ffe594081f20da1ef19478df9384b.css" rel="stylesheet">
@@ -45,7 +45,16 @@
     
   </head>
   <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
-
+<!-- Google Tag Manager (noscript) -->
+<noscript
+  ><iframe
+    src="https://www.googletagmanager.com/ns.html?id=GTM-P4GQM59"
+    height="0"
+    width="0"
+    style="display: none; visibility: hidden"
+  ></iframe
+></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <nav class="dask-nav container-fluid">
   <ul>
     <li class="logo">
@@ -104,7 +113,7 @@
       
       
       
-      <h1 class="site-logo" id="site-title">Dask Gateway 2022.6.1 documentation</h1>
+      <h1 class="site-logo" id="site-title">Dask Gateway 2023.1.1 documentation</h1>
       
     </a>
 </div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
@@ -376,10 +385,10 @@ need to create a <code class="docutils literal notranslate"><span class="pre">HT
 <code class="docutils literal notranslate"><span class="pre">dask-gateway-server</span></code> (if one doesn’t already exist). Keytabs can be created
 on the command-line as:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the HTTP principal (if not already created)</span>
-$ kadmin -q <span class="s2">&quot;addprinc -randkey HTTP/FQDN&quot;</span>
+$<span class="w"> </span>kadmin<span class="w"> </span>-q<span class="w"> </span><span class="s2">&quot;addprinc -randkey HTTP/FQDN&quot;</span>
 
 <span class="c1"># Create a keytab</span>
-$ kadmin -q <span class="s2">&quot;xst -norandkey -k /etc/dask-gateway/http.keytab HTTP/FQDN&quot;</span>
+$<span class="w"> </span>kadmin<span class="w"> </span>-q<span class="w"> </span><span class="s2">&quot;xst -norandkey -k /etc/dask-gateway/http.keytab HTTP/FQDN&quot;</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">FQDN</span></code> is the <a class="reference external" href="https://en.wikipedia.org/wiki/Fully_qualified_domain_name">fully qualified domain name</a> of the host running
@@ -388,8 +397,8 @@ $ kadmin -q <span class="s2">&quot;xst -norandkey -k /etc/dask-gateway/http.keyt
 the other configuration (usually in <code class="docutils literal notranslate"><span class="pre">/etc/dask-gateway/</span></code>). You’ll also want
 to make sure that <code class="docutils literal notranslate"><span class="pre">http.keytab</span></code> is only readable by admin users (usually just
 the <code class="docutils literal notranslate"><span class="pre">dask</span></code> user running <code class="docutils literal notranslate"><span class="pre">dask-gateway-server</span></code>).</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ chown dask /etc/dask-gateway/http.keytab
-$ chmod <span class="m">400</span> /etc/dask-gateway/http.keytab
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>chown<span class="w"> </span>dask<span class="w"> </span>/etc/dask-gateway/http.keytab
+$<span class="w"> </span>chmod<span class="w"> </span><span class="m">400</span><span class="w"> </span>/etc/dask-gateway/http.keytab
 </pre></div>
 </div>
 <p>To configure <code class="docutils literal notranslate"><span class="pre">dask-gateway-server</span></code> to use this keytab file, you’ll need to
@@ -411,7 +420,7 @@ use JupyterHub for authentication. To do this, we register <code class="docutils
 a <a class="reference external" href="https://jupyterhub.readthedocs.io/en/stable/getting-started/services-basics.html">JupyterHub Service</a>.</p>
 <p>First we need to generate an API Token - this is commonly done using
 <code class="docutils literal notranslate"><span class="pre">openssl</span></code>:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ openssl rand -hex <span class="m">32</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">32</span>
 </pre></div>
 </div>
 <p>Then add the following lines to your <code class="docutils literal notranslate"><span class="pre">dask_gateway_config.py</span></code> file:</p>
@@ -479,6 +488,30 @@ between users and the <code class="docutils literal notranslate"><span class="pr
     </div>
   
   <script src="_static/js/index.be7d3bbb2ef33a8344ce.js"></script>
+
+<!-- Google Tag Manager -->
+<script>
+  (function (w, d, s, l, i) {
+    w[l] = w[l] || [];
+    w[l].push({
+      "gtm.start": new Date().getTime(),
+      event: "gtm.js",
+    });
+    var f = d.getElementsByTagName(s)[0],
+      j = d.createElement(s),
+      dl = l != "dataLayer" ? "&l=" + l : "";
+    j.async = true;
+    j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+    f.parentNode.insertBefore(j, f);
+  })(
+    window,
+    document,
+    "script",
+    "dataLayer",
+    "GTM-P4GQM59"
+  );
+</script>
+<!-- End Google Tag Manager -->
 
   </body>
 </html>
